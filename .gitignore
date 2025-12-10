@@ -1,0 +1,30 @@
+# Dependências
+node_modules/
+
+# Banco de dados (não versionar - cada servidor tem o seu)
+data/*.db
+data/*.db-wal
+data/*.db-shm
+
+# Manter pasta data mas ignorar arquivos
+!data/
+data/backups/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Variáveis de ambiente (se usar)
+.env
+.env.local
+
+# Ngrok
+ngrok.yml

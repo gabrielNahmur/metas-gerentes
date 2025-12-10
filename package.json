@@ -1,0 +1,18 @@
+{
+    "name": "metas-gerentes",
+    "version": "1.0.0",
+    "description": "Sistema de Automação de Metas de Gerentes - GBI",
+    "main": "backend/server.js",
+    "scripts": {
+        "start": "node backend/server.js",
+        "dev": "node --watch backend/server.js"
+    },
+    "dependencies": {
+        "express": "^4.18.2",
+        "cors": "^2.8.5",
+        "better-sqlite3": "^9.2.2",
+        "mssql": "^10.0.2",
+        "node-schedule": "^2.1.1",
+        "axios": "^1.6.2"
+    }
+}

@@ -1,0 +1,372 @@
+/* Sistema de Metas de Gerentes - GBI */
+
+:root {
+    --primary: #1e3a5f;
+    --secondary: #3498db;
+    --success: #27ae60;
+    --warning: #f39c12;
+    --danger: #e74c3c;
+    --bg-light: #f8f9fa;
+    --border: #ddd;
+    --text: #333;
+    --text-muted: #666;
+
+    /* Cores das categorias */
+    --combustiveis: #4a7c3f;
+    --combustiveis-bg: #e8f5e9;
+    --conveniencia: #e67e22;
+    --conveniencia-bg: #fff3e0;
+    --trocas: #2980b9;
+    --trocas-bg: #e3f2fd;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--bg-light);
+    color: var(--text);
+    font-size: 12px;
+}
+
+.container {
+    max-width: 100%;
+    padding: 10px;
+}
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--primary);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+}
+
+.header h1 {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.header .subtitle {
+    font-size: 11px;
+    opacity: 0.8;
+}
+
+.period-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.period-selector label {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.period-selector select {
+    padding: 5px 8px;
+    border-radius: 4px;
+    border: none;
+    font-size: 12px;
+}
+
+/* Buttons */
+.btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: white;
+    color: var(--primary);
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-success {
+    background: var(--success);
+    color: white;
+}
+
+.btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+/* Toolbar */
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 8px;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+}
+
+.toolbar-left {
+    display: flex;
+    gap: 8px;
+}
+
+.status-message {
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 3px;
+}
+
+.status-message.loading {
+    color: var(--secondary);
+}
+
+.status-message.success {
+    color: var(--success);
+}
+
+.status-message.error {
+    color: var(--danger);
+}
+
+.last-update {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-left: 10px;
+}
+
+/* Table Container */
+.table-container {
+    overflow-x: auto;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+}
+
+/* Excel-style Table */
+.excel-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+}
+
+.excel-table th,
+.excel-table td {
+    padding: 4px 6px;
+    border: 1px solid #ccc;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.excel-table th {
+    background: #f5f5f5;
+    font-weight: 600;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+/* Group Headers */
+.group-header {
+    color: white;
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+.group-header.combustiveis {
+    background: var(--combustiveis);
+}
+
+.group-header.conveniencia {
+    background: var(--conveniencia);
+}
+
+.group-header.trocas {
+    background: var(--trocas);
+}
+
+/* Column Headers - FONTE BRANCA */
+th.combustiveis {
+    background: var(--combustiveis);
+    color: white;
+}
+
+th.conveniencia {
+    background: var(--conveniencia);
+    color: white;
+}
+
+th.trocas {
+    background: var(--trocas);
+    color: white;
+}
+
+th.editable-header {
+    font-weight: bold !important;
+    background: #fff59d !important;
+    color: #333 !important;
+}
+
+/* Cell backgrounds */
+.combustiveis-bg {
+    background: #f1f8e9;
+}
+
+.conveniencia-bg {
+    background: #fff8e1;
+}
+
+.trocas-bg {
+    background: #e3f2fd;
+}
+
+/* Unidade column */
+.col-unidade {
+    text-align: left !important;
+    font-weight: 500;
+    min-width: 140px;
+    position: sticky;
+    left: 0;
+    background: white;
+    z-index: 5;
+}
+
+/* Meta columns */
+.meta-col {
+    background: #fff59d !important;
+    font-weight: bold;
+}
+
+/* Percentage column */
+.pct {
+    font-style: italic;
+    color: #666;
+}
+
+/* Readonly cells */
+.readonly {
+    color: #555;
+}
+
+/* Editable cells */
+.editable {
+    cursor: pointer;
+    position: relative;
+}
+
+.editable:hover {
+    background-color: #fff9c4 !important;
+    box-shadow: inset 0 0 0 2px var(--secondary);
+}
+
+.editable.editing {
+    padding: 0;
+}
+
+.editable.editing input {
+    width: 100%;
+    height: 100%;
+    border: 2px solid var(--secondary);
+    padding: 4px;
+    font-size: 11px;
+    text-align: right;
+    background: white;
+}
+
+/* Section headers */
+.section-header td {
+    padding: 6px 10px !important;
+}
+
+/* Total row */
+.total-row {
+    background: #e8eaf6 !important;
+    font-weight: 600;
+}
+
+.total-row td {
+    border-top: 2px solid #333;
+}
+
+/* Combinada row */
+tr.combinada {
+    background: #fce4ec !important;
+}
+
+tr.combinada .col-unidade::after {
+    content: ' ★';
+    color: var(--danger);
+}
+
+/* Modified row */
+.row-modified {
+    background: #fff3cd !important;
+}
+
+.row-modified .col-unidade::before {
+    content: '● ';
+    color: var(--warning);
+}
+
+/* Legend */
+.legend {
+    margin-top: 10px;
+    display: flex;
+    gap: 15px;
+    font-size: 10px;
+    color: var(--text-muted);
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    border: 1px solid #ccc;
+}
+
+.legend-color.editable {
+    background: #fff59d;
+}
+
+.legend-color.readonly {
+    background: #f5f5f5;
+}
+
+.legend-color.combinada {
+    background: #fce4ec;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .toolbar {
+        flex-direction: column;
+        gap: 10px;
+    }
+}

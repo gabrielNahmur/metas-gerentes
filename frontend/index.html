@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metas de Gerentes - GBI</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <h1>📊 Metas de Gerentes</h1>
+                <span class="subtitle">GBI Combustíveis</span>
+            </div>
+            <div class="header-right">
+                <div class="period-selector">
+                    <label>Mês:</label>
+                    <select id="mes-select"></select>
+                    <label>Ano:</label>
+                    <select id="ano-select"></select>
+                    <button id="btn-carregar" class="btn btn-primary">
+                        🔄 Carregar
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <button id="btn-sync" class="btn btn-secondary" title="Sincronizar vendas do SQL Server">
+                    ⬇️ Sync Vendas
+                </button>
+                <button id="btn-salvar" class="btn btn-success" title="Salvar todas as metas">
+                    💾 Salvar Metas
+                </button>
+            </div>
+            <div class="toolbar-right">
+                <span id="status-message" class="status-message"></span>
+                <span id="last-update" class="last-update"></span>
+            </div>
+        </div>
+
+        <!-- Tabela Principal -->
+        <div class="table-container">
+            <table id="metas-table" class="excel-table">
+                <thead>
+                    <tr>
+                        <th class="col-unidade" rowspan="2">Unidade</th>
+                        <th colspan="5" class="group-header combustiveis">COMBUSTÍVEIS (Litros)</th>
+                        <th colspan="5" class="group-header conveniencia">LOJA (R$)</th>
+                        <th colspan="5" class="group-header trocas">TROCA DE ÓLEO (R$)</th>
+                        <th class="col-dayway" rowspan="2">DayWay %</th>
+                    </tr>
+                    <tr>
+                        <!-- Combustíveis -->
+                        <th class="combustiveis">Ano Anterior</th>
+                        <th class="combustiveis">Orçamento</th>
+                        <th class="combustiveis">Mês Anterior</th>
+                        <th class="combustiveis editable-header">META</th>
+                        <th class="combustiveis">% vs Ano Ant.</th>
+                        <!-- Loja -->
+                        <th class="conveniencia">Ano Anterior</th>
+                        <th class="conveniencia">Orçamento</th>
+                        <th class="conveniencia">Mês Anterior</th>
+                        <th class="conveniencia editable-header">META</th>
+                        <th class="conveniencia">% vs Ano Ant.</th>
+                        <!-- Trocas -->
+                        <th class="trocas">Ano Anterior</th>
+                        <th class="trocas">Orçamento</th>
+                        <th class="trocas">Mês Anterior</th>
+                        <th class="trocas editable-header">META</th>
+                        <th class="trocas">% vs Ano Ant.</th>
+                    </tr>
+                </thead>
+                <tbody id="metas-tbody">
+                    <!-- Dados carregados via JavaScript -->
+                </tbody>
+                <tfoot id="metas-tfoot">
+                    <!-- Totais gerados via JavaScript -->
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- Legenda -->
+        <div class="legend">
+            <span class="legend-item">
+                <span class="legend-color editable"></span> Células editáveis (duplo-clique)
+            </span>
+            <span class="legend-item">
+                <span class="legend-color readonly"></span> Valores de referência (somente leitura)
+            </span>
+            <span class="legend-item">
+                <span class="legend-color combinada"></span> Unidade combinada
+            </span>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
