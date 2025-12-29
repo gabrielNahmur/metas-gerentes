@@ -106,21 +106,39 @@ router.get('/indicadores', async (req, res) => {
             WHERE mes = ? AND ano = ?
         `).all(mes, ano);
 
-        // Se não tem cache, busca do SQL Server
-        if (vendas.length === 0) {
+        let usouCache = vendas.length > 0;
+
+        // Se não tem cache, busca do SQL Server diretamente
+        if (!usouCache) {
             try {
                 const sqlVendas = await sqlConnection.buscarResumoVendas(mes, ano);
-                vendas = sqlVendas || [];
+                // buscarResumoVendas já retorna dados agrupados por unidade
+                // com campos: combustiveis_qtd, combustiveis_valor, conveniencia_valor, trocas_valor
+                if (sqlVendas && sqlVendas.length > 0) {
+                    return res.json({
+                        success: true,
+                        mes,
+                        ano,
+                        source: 'sql_server',
+                        data: sqlVendas.map(v => ({
+                            codigo: v.codigo,
+                            combustiveis_qtd: v.combustiveis_qtd || 0,
+                            combustiveis_valor: v.combustiveis_valor || 0,
+                            conveniencia_valor: v.conveniencia_valor || 0,
+                            trocas_valor: v.trocas_valor || 0
+                        }))
+                    });
+                }
             } catch (e) {
                 console.warn('SQL Server indisponível:', e.message);
             }
         }
 
-        // Agrupar por unidade
+        // Agrupar dados do cache por unidade
         const unidadesMap = {};
 
         vendas.forEach(v => {
-            const codigo = v.unidade_codigo || v.CD_ESTAB;
+            const codigo = v.unidade_codigo;
             if (!unidadesMap[codigo]) {
                 unidadesMap[codigo] = {
                     codigo,
@@ -131,15 +149,15 @@ router.get('/indicadores', async (req, res) => {
                 };
             }
 
-            const cat = (v.categoria || v.DESCRICAO_CATEGORIA_ITEM || '').toUpperCase();
+            const cat = (v.categoria || '').toUpperCase();
 
             if (cat.includes('COMBUST')) {
-                unidadesMap[codigo].combustiveis_qtd += v.quantidade_total || v.QTD || 0;
-                unidadesMap[codigo].combustiveis_valor += v.valor_total || v.VALOR || 0;
+                unidadesMap[codigo].combustiveis_qtd += v.quantidade_total || 0;
+                unidadesMap[codigo].combustiveis_valor += v.valor_total || 0;
             } else if (cat.includes('CONVENI') || cat.includes('LOJA')) {
-                unidadesMap[codigo].conveniencia_valor += v.valor_total || v.VALOR || 0;
-            } else if (cat.includes('LUBRI') || cat.includes('TROCA') || cat.includes('OLEO')) {
-                unidadesMap[codigo].trocas_valor += v.valor_total || v.VALOR || 0;
+                unidadesMap[codigo].conveniencia_valor += v.valor_total || 0;
+            } else if (cat.includes('LUBRI') || cat.includes('ADITIVO') || cat.includes('FILTRO') || cat.includes('ACESSORIO')) {
+                unidadesMap[codigo].trocas_valor += v.valor_total || 0;
             }
         });
 
@@ -147,6 +165,7 @@ router.get('/indicadores', async (req, res) => {
             success: true,
             mes,
             ano,
+            source: usouCache ? 'cache' : 'empty',
             data: Object.values(unidadesMap)
         });
     } catch (error) {
