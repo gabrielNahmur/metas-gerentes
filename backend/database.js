@@ -51,6 +51,7 @@ function initialize() {
             mes INTEGER NOT NULL,
             ano INTEGER NOT NULL,
             dayway_percent REAL DEFAULT 100,
+            atual_dayway_percent REAL DEFAULT 0,
             updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
             UNIQUE(unidade_codigo, mes, ano)
         )

@@ -217,7 +217,8 @@ async function salvarMetas() {
                 conveniencia_orcamento: m.conveniencia_orcamento || 0,
                 trocas_valor: m.trocas_valor,
                 trocas_orcamento: m.trocas_orcamento || 0,
-                dayway_percent: m.dayway_percent
+                dayway_percent: m.dayway_percent,
+                atual_dayway_percent: m.atual_dayway_percent
             }));
 
         const res = await fetch(`${API_URL}/api/metas/batch`, {
@@ -261,7 +262,7 @@ function renderTabela() {
     if (urbanas.length > 0) {
         const headerRow = document.createElement('tr');
         headerRow.className = 'section-header';
-        headerRow.innerHTML = '<td colspan="17" style="background:#1e3a5f;color:white;font-weight:bold;text-align:left;padding-left:10px;">URBANO</td>';
+        headerRow.innerHTML = '<td colspan="18" style="background:#1e3a5f;color:white;font-weight:bold;text-align:left;padding-left:10px;">URBANO</td>';
         tbody.appendChild(headerRow);
 
         urbanas.forEach(m => tbody.appendChild(criarLinha(m)));
@@ -274,7 +275,7 @@ function renderTabela() {
     if (rodovias.length > 0) {
         const headerRow = document.createElement('tr');
         headerRow.className = 'section-header';
-        headerRow.innerHTML = '<td colspan="17" style="background:#1e3a5f;color:white;font-weight:bold;text-align:left;padding-left:10px;">RODOVIA</td>';
+        headerRow.innerHTML = '<td colspan="18" style="background:#1e3a5f;color:white;font-weight:bold;text-align:left;padding-left:10px;">RODOVIA</td>';
         tbody.appendChild(headerRow);
 
         rodovias.forEach(m => tbody.appendChild(criarLinha(m)));
@@ -326,7 +327,8 @@ function criarLinha(meta) {
         <td class="readonly trocas-bg pct">${pctTrocas !== '-' ? pctTrocas + '%' : '-'}</td>
         
         <!-- DayWay -->
-        <td class="editable" data-field="dayway_percent">${meta.dayway_percent || 100}%</td>
+        <td class="editable" data-field="atual_dayway_percent">${meta.atual_dayway_percent || 0}%</td>
+        <td class="editable meta-col" data-field="dayway_percent">${meta.dayway_percent || 100}%</td>
     `;
 
     // Event listeners para células editáveis
@@ -392,6 +394,7 @@ function criarLinhaTotal(unidades, label) {
         <td class="trocas-bg meta-col"><strong>${formatCurrency(totais.meta_trocas)}</strong></td>
         <td class="trocas-bg">${pctTrocas}</td>
         <td>-</td>
+        <td>-</td>
     `;
 
     return tr;
@@ -404,7 +407,7 @@ function startEditing(cell, meta) {
     if (cell.classList.contains('editing')) return;
 
     const field = cell.dataset.field;
-    const isPercent = field === 'dayway_percent';
+    const isPercent = field.includes('dayway_percent');
     const isCurrency = field.includes('valor') || field.includes('orcamento') && !field.includes('combustiveis');
 
     let valor = meta[field] || 0;

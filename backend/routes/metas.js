@@ -27,7 +27,7 @@ router.get('/', (req, res) => {
 
         // Buscar DayWay do período
         const dayways = db.prepare(`
-            SELECT unidade_codigo, dayway_percent 
+            SELECT unidade_codigo, dayway_percent, atual_dayway_percent 
             FROM metas_dayway 
             WHERE mes = ? AND ano = ?
         `).all(mes, ano);
@@ -44,7 +44,10 @@ router.get('/', (req, res) => {
         // Criar mapa de DayWay por unidade
         const daywayMap = {};
         for (const d of dayways) {
-            daywayMap[d.unidade_codigo] = d.dayway_percent;
+            daywayMap[d.unidade_codigo] = {
+                meta: d.dayway_percent,
+                atual: d.atual_dayway_percent
+            };
         }
 
         // Montar resposta agrupada para o frontend
@@ -56,7 +59,8 @@ router.get('/', (req, res) => {
             combustiveis_litros: metasMap[u.codigo]?.['COMBUSTÍVEIS'] || 0,
             conveniencia_valor: metasMap[u.codigo]?.['CONVENIENCIA'] || 0,
             trocas_valor: metasMap[u.codigo]?.['LUBRIFICANTES'] || 0,
-            dayway_percent: daywayMap[u.codigo] || 100
+            dayway_percent: daywayMap[u.codigo]?.meta || 100,
+            atual_dayway_percent: daywayMap[u.codigo]?.atual || 0
         }));
 
         res.json({
@@ -134,7 +138,7 @@ router.get('/:codigo', (req, res) => {
         `).all(codigo, mes, ano);
 
         const dayway = db.prepare(`
-            SELECT dayway_percent FROM metas_dayway 
+            SELECT dayway_percent, atual_dayway_percent FROM metas_dayway 
             WHERE unidade_codigo = ? AND mes = ? AND ano = ?
         `).get(codigo, mes, ano);
 
@@ -150,7 +154,8 @@ router.get('/:codigo', (req, res) => {
                 combustiveis_litros: metasObj['COMBUSTÍVEIS'] || 0,
                 conveniencia_valor: metasObj['CONVENIENCIA'] || 0,
                 trocas_valor: metasObj['LUBRIFICANTES'] || 0,
-                dayway_percent: dayway?.dayway_percent || 100
+                dayway_percent: dayway?.dayway_percent || 100,
+                atual_dayway_percent: dayway?.atual_dayway_percent || 0
             }
         });
     } catch (error) {
@@ -175,7 +180,8 @@ router.post('/', (req, res) => {
             combustiveis_litros,
             conveniencia_valor,
             trocas_valor,
-            dayway_percent
+            dayway_percent,
+            atual_dayway_percent
         } = req.body;
 
         if (!unidade_codigo || !mes || !ano) {
@@ -197,10 +203,11 @@ router.post('/', (req, res) => {
         `);
 
         const stmtDayway = db.prepare(`
-            INSERT INTO metas_dayway (unidade_codigo, mes, ano, dayway_percent, updated_at)
-            VALUES (@unidade_codigo, @mes, @ano, @dayway_percent, datetime('now'))
+            INSERT INTO metas_dayway (unidade_codigo, mes, ano, dayway_percent, atual_dayway_percent, updated_at)
+            VALUES (@unidade_codigo, @mes, @ano, @dayway_percent, @atual_dayway_percent, datetime('now'))
             ON CONFLICT(unidade_codigo, mes, ano) DO UPDATE SET
                 dayway_percent = @dayway_percent,
+                atual_dayway_percent = @atual_dayway_percent,
                 updated_at = datetime('now')
         `);
 
@@ -235,7 +242,8 @@ router.post('/', (req, res) => {
                 unidade_codigo,
                 mes: parseInt(mes),
                 ano: parseInt(ano),
-                dayway_percent: parseFloat(dayway_percent) || 100
+                dayway_percent: parseFloat(dayway_percent) || 100,
+                atual_dayway_percent: parseFloat(atual_dayway_percent) || 0
             });
         });
 
@@ -279,10 +287,11 @@ router.put('/batch', (req, res) => {
         `);
 
         const stmtDayway = db.prepare(`
-            INSERT INTO metas_dayway (unidade_codigo, mes, ano, dayway_percent, updated_at)
-            VALUES (@unidade_codigo, @mes, @ano, @dayway_percent, datetime('now'))
+            INSERT INTO metas_dayway (unidade_codigo, mes, ano, dayway_percent, atual_dayway_percent, updated_at)
+            VALUES (@unidade_codigo, @mes, @ano, @dayway_percent, @atual_dayway_percent, datetime('now'))
             ON CONFLICT(unidade_codigo, mes, ano) DO UPDATE SET
                 dayway_percent = @dayway_percent,
+                atual_dayway_percent = @atual_dayway_percent,
                 updated_at = datetime('now')
         `);
 
@@ -319,7 +328,8 @@ router.put('/batch', (req, res) => {
                 stmtDayway.run({
                     unidade_codigo: meta.unidade_codigo,
                     mes, ano,
-                    dayway_percent: parseFloat(meta.dayway_percent) || 100
+                    dayway_percent: parseFloat(meta.dayway_percent) || 100,
+                    atual_dayway_percent: parseFloat(meta.atual_dayway_percent) || 0
                 });
             }
         });
