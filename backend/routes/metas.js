@@ -110,6 +110,37 @@ router.get('/all', (req, res) => {
 });
 
 /**
+ * GET /api/metas/dayway/all
+ * Retorna TODAS as metas de DAYWAY no formato TABULAR para Power BI
+ */
+router.get('/dayway/all', (req, res) => {
+    try {
+        const db = database.getDb();
+
+        const dados = db.prepare(`
+            SELECT 
+                d.unidade_codigo as Unidade,
+                (d.ano || '-' || printf('%02d', d.mes) || '-01') as "Mês/Ano",
+                d.dayway_percent as Meta,
+                d.atual_dayway_percent as Atual
+            FROM metas_dayway d
+            ORDER BY d.ano DESC, d.mes DESC, d.unidade_codigo
+        `).all();
+
+        res.json({
+            success: true,
+            total: dados.length,
+            data: dados
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+/**
  * GET /api/metas/:codigo
  * Retorna meta de uma unidade específica
  */
