@@ -32,18 +32,19 @@ async function rodarSincronia() {
         const mesAtual = hoje.getMonth() + 1;
         const anoAtual = hoje.getFullYear();
 
-        const llmMes = mesAtual === 1 ? 12 : mesAtual - 1;
-        const llmAno = mesAtual === 1 ? anoAtual - 1 : anoAtual;
+        const payloadVendas = [];
 
-        const yoyMes = mesAtual;
-        const yoyAno = anoAtual - 1;
+        // Puxar os dados históricos de até 24 meses atrás (2 anos)
+        // Isso garante que tabelas anuais e relatórios fiquem sempre cheios.
+        for (let i = 0; i <= 24; i++) {
+            // Calcular mês e ano retroativo
+            const dataConsulta = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
+            const refMes = dataConsulta.getMonth() + 1;
+            const refAno = dataConsulta.getFullYear();
 
-        // Extrair vendas dos 3 períodos necessários
-        const vendasAtual = await sincronizarPeriodo(mesAtual, anoAtual);
-        const vendasLlm = await sincronizarPeriodo(llmMes, llmAno);
-        const vendasYoy = await sincronizarPeriodo(yoyMes, yoyAno);
-
-        const payloadVendas = [...vendasAtual, ...vendasLlm, ...vendasYoy];
+            const vendasPeriodo = await sincronizarPeriodo(refMes, refAno);
+            payloadVendas.push(...vendasPeriodo);
+        }
 
         if (payloadVendas.length === 0) {
             console.log('⚠️ Nenhum dado retornado para envios.');
