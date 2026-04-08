@@ -154,33 +154,8 @@ router.get('/indicadores', async (req, res) => {
 
         let usouCache = vendas.length > 0;
 
-        // Se não tem cache e o SQL Server estiver habilitado localmente, busca direto
-        const isSqlServerEnabled = process.env.ENABLE_SQL_SERVER !== 'false';
-        
-        if (!usouCache && isSqlServerEnabled) {
-            try {
-                const sqlVendas = await sqlConnection.buscarResumoVendas(mes, ano);
-                // buscarResumoVendas já retorna dados agrupados por unidade
-                // com campos: combustiveis_qtd, combustiveis_valor, conveniencia_valor, trocas_valor
-                if (sqlVendas && sqlVendas.length > 0) {
-                    return res.json({
-                        success: true,
-                        mes,
-                        ano,
-                        source: 'sql_server',
-                        data: sqlVendas.map(v => ({
-                            codigo: v.codigo,
-                            combustiveis_qtd: v.combustiveis_qtd || 0,
-                            combustiveis_valor: v.combustiveis_valor || 0,
-                            conveniencia_valor: v.conveniencia_valor || 0,
-                            trocas_valor: v.trocas_valor || 0
-                        }))
-                    });
-                }
-            } catch (e) {
-                console.warn('SQL Server indisponível ou desabilitado:', e.message);
-            }
-        }
+        // Pela nova arquitetura Push, a UI *nunca* deve tentar buscar direto no SQL.
+        // Deve confiar apenas no cache (que é alimentado pelo agente). Isso zera a lentidão.
 
         // Agrupar dados do cache por unidade
         const unidadesMap = {};
