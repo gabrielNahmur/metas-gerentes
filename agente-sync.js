@@ -5,6 +5,25 @@ const sqlConnection = require('./backend/sql-connection');
 const AWS_URL = process.env.AWS_URL || 'http://3.239.244.231:3000';
 const SYNC_TOKEN = 'GBI-AWS-SYNC-2026'; // Deve bater com o definido na AWS
 
+async function sincronizarPeriodo(mes, ano) {
+    console.log(`📡 Consultando SQL Server local (Mês: ${mes}/${ano})...`);
+    const dadosSQL = await sqlConnection.buscarVendas(mes, ano);
+
+    if (!dadosSQL || dadosSQL.length === 0) {
+        console.log(`⚠️ Nenhuma venda encontrada no SQL para ${mes}/${ano}.`);
+        return [];
+    }
+
+    return dadosSQL.map(v => ({
+        mes: mes,
+        ano: ano,
+        unidade_codigo: v.CD_ESTAB.toString().padStart(3, '0'),
+        categoria: v.DESCRICAO_CATEGORIA_ITEM,
+        valor_total: v.ValorMesSelecionado || 0,
+        quantidade_total: v.QtdMesSelecionado || 0
+    }));
+}
+
 async function rodarSincronia() {
     console.log(`[${new Date().toLocaleString()}] 🔄 Iniciando Sincronização Local -> AWS...`);
 
@@ -13,26 +32,25 @@ async function rodarSincronia() {
         const mesAtual = hoje.getMonth() + 1;
         const anoAtual = hoje.getFullYear();
 
-        // 1. Extrair vendas do SQL local
-        console.log(`📡 Consultando SQL Server local (Mês: ${mesAtual}/${anoAtual})...`);
-        const dadosSQL = await sqlConnection.buscarVendas(mesAtual, anoAtual);
+        const llmMes = mesAtual === 1 ? 12 : mesAtual - 1;
+        const llmAno = mesAtual === 1 ? anoAtual - 1 : anoAtual;
 
-        if (!dadosSQL || dadosSQL.length === 0) {
-            console.log('⚠️ Nenhuma venda encontrada no SQL para este período.');
+        const yoyMes = mesAtual;
+        const yoyAno = anoAtual - 1;
+
+        // Extrair vendas dos 3 períodos necessários
+        const vendasAtual = await sincronizarPeriodo(mesAtual, anoAtual);
+        const vendasLlm = await sincronizarPeriodo(llmMes, llmAno);
+        const vendasYoy = await sincronizarPeriodo(yoyMes, yoyAno);
+
+        const payloadVendas = [...vendasAtual, ...vendasLlm, ...vendasYoy];
+
+        if (payloadVendas.length === 0) {
+            console.log('⚠️ Nenhum dado retornado para envios.');
             return;
         }
 
-        console.log(`📊 ${dadosSQL.length} registros encontrados. Preparando envio para AWS...`);
-
-        // Formatar os dados para coincidir com a estrutura da tabela vendas_cache
-        const payloadVendas = dadosSQL.map(v => ({
-            mes: mesAtual,
-            ano: anoAtual,
-            unidade_codigo: v.CD_ESTAB.toString().padStart(3, '0'),
-            categoria: v.DESCRICAO_CATEGORIA_ITEM,
-            valor_total: v.ValorMesSelecionado || 0,
-            quantidade_total: v.QtdMesSelecionado || 0
-        }));
+        console.log(`📊 ${payloadVendas.length} registros no total. Preparando envio para AWS...`);
 
         // 2. Enviar POST via HTTP para a Amazon Lightsail
         const resposta = await fetch(`${AWS_URL}/api/vendas/upload_sync`, {
