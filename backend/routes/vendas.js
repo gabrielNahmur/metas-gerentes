@@ -106,7 +106,7 @@ router.post('/upload_sync', express.json({limit: '50mb'}), (req, res) => {
         // Transação para inserir/substituir o lote todo de forma segura
         const insertStmt = db.prepare(`
             INSERT OR REPLACE INTO vendas_cache 
-            (mes, ano, unidade_codigo, categoria, valor_total, quantidade_total, atualizado_em) 
+            (mes, ano, unidade_codigo, categoria, valor_total, quantidade_total, updated_at) 
             VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
         `);
 
