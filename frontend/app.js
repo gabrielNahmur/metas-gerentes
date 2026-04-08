@@ -101,12 +101,7 @@ async function carregarDados() {
         let llmAno = state.ano;
         if (llmMes === 0) { llmMes = 12; llmAno--; }
 
-        // Sincronizar os 3 períodos em paralelo (atual, YOY, LLM)
-        await Promise.all([
-            syncPeriodo(state.mes, state.ano),
-            syncPeriodo(yoyMes, yoyAno),
-            syncPeriodo(llmMes, llmAno)
-        ]);
+        // Agora contamos exclusivamente com o Push Agent. A UI só busca do banco local SQLite e não pausa.
 
         showStatus('Carregando dados...', 'loading');
 
