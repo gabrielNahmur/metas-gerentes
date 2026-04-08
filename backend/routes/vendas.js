@@ -68,6 +68,11 @@ router.post('/sync', async (req, res) => {
         const mes = parseInt(req.body.mes) || new Date().getMonth() + 1;
         const ano = parseInt(req.body.ano) || new Date().getFullYear();
 
+        // Se a aplicação estiver na AWS (sem acesso direto ao SQL), ignorar o sync manual
+        if (process.env.ENABLE_SQL_SERVER === 'false') {
+            return res.json({ success: true, message: 'O servidor local está configurado para enviar vendas automaticamente. O botão online não precisa ser usado.' });
+        }
+
         const resultado = await scheduler.executarSyncManual(mes, ano);
 
         res.json(resultado);
@@ -76,6 +81,47 @@ router.post('/sync', async (req, res) => {
             success: false,
             error: error.message
         });
+    }
+});
+
+/**
+ * POST /api/vendas/upload_sync
+ * Recebe o dump de vendas do agente local Windows
+ */
+router.post('/upload_sync', express.json({limit: '50mb'}), (req, res) => {
+    try {
+        const { token, vendas } = req.body;
+        
+        // Token super simples de segurança (pode ser melhorado depois)
+        if (token !== 'GBI-AWS-SYNC-2026') {
+            return res.status(401).json({ success: false, message: 'Não autorizado' });
+        }
+
+        if (!vendas || !Array.isArray(vendas)) {
+            return res.status(400).json({ success: false, message: 'Dados inválidos' });
+        }
+
+        const db = database.getDb();
+        
+        // Transação para inserir/substituir o lote todo de forma segura
+        const insertStmt = db.prepare(`
+            INSERT OR REPLACE INTO vendas_cache 
+            (mes, ano, unidade_codigo, categoria, valor_total, quantidade_total, atualizado_em) 
+            VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+        `);
+
+        const transaction = db.transaction((linhas) => {
+            for (const v of linhas) {
+                insertStmt.run(v.mes, v.ano, v.unidade_codigo, v.categoria, v.valor_total, v.quantidade_total);
+            }
+        });
+
+        transaction(vendas);
+
+        res.json({ success: true, count: vendas.length, message: 'Upload recebido e salvo com sucesso' });
+    } catch (error) {
+        console.error('Erro no upload_sync:', error);
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
@@ -108,8 +154,10 @@ router.get('/indicadores', async (req, res) => {
 
         let usouCache = vendas.length > 0;
 
-        // Se não tem cache, busca do SQL Server diretamente
-        if (!usouCache) {
+        // Se não tem cache e o SQL Server estiver habilitado localmente, busca direto
+        const isSqlServerEnabled = process.env.ENABLE_SQL_SERVER !== 'false';
+        
+        if (!usouCache && isSqlServerEnabled) {
             try {
                 const sqlVendas = await sqlConnection.buscarResumoVendas(mes, ano);
                 // buscarResumoVendas já retorna dados agrupados por unidade
@@ -130,7 +178,7 @@ router.get('/indicadores', async (req, res) => {
                     });
                 }
             } catch (e) {
-                console.warn('SQL Server indisponível:', e.message);
+                console.warn('SQL Server indisponível ou desabilitado:', e.message);
             }
         }
 

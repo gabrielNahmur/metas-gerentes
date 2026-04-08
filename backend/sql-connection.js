@@ -2,7 +2,7 @@ const sql = require('mssql');
 
 // Configuração do SQL Server (baseado no VBA original)
 const config = {
-    server: '192.168.20.250\\SQL2016',
+    server: process.env.SQL_SERVER || '192.168.20.250\\SQL2016',
     database: 'SMB_BI',
     user: 'SMB_BI',
     password: 'SMB_BI',
