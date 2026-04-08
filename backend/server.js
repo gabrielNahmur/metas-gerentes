@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
+const https = require('https');
 
 // Importar módulos
 const database = require('./database');
@@ -82,13 +84,33 @@ app.post('/api/powerbi/refresh', async (req, res) => {
     res.json(result);
 });
 
-// Iniciar servidor
-app.listen(PORT, () => {
-    console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
-    console.log(`📊 Sistema de Metas de Gerentes - GBI`);
+// Configuração de Certificados SSL (HTTPS)
+const sslOptions = {};
+try {
+    const certPath = '/etc/letsencrypt/live/metas.atendimento-gbi.online';
+    // No Windows Local (desenvolvimento) não vai achar e vai rodar normal em HTTP
+    if (fs.existsSync(`${certPath}/privkey.pem`)) {
+        sslOptions.key = fs.readFileSync(`${certPath}/privkey.pem`);
+        sslOptions.cert = fs.readFileSync(`${certPath}/fullchain.pem`);
+        console.log('🔒 Certificados SSL carregados com sucesso.');
+    }
+} catch (e) {
+    console.log('⚠️ Aviso: Certificados SSL não checados.');
+}
 
-    // Iniciar agendador de tarefas
-    scheduler.start();
-});
+// Iniciar servidor
+if (sslOptions.key && sslOptions.cert) {
+    https.createServer(sslOptions, app).listen(PORT, '0.0.0.0', () => {
+        console.log(`🚀 [HTTPS] Servidor rodando seguro em https://0.0.0.0:${PORT}`);
+        console.log(`📊 Sistema de Metas de Gerentes - GBI`);
+        scheduler.start();
+    });
+} else {
+    app.listen(PORT, '0.0.0.0', () => {
+        console.log(`🚀 [HTTP] Servidor rodando em http://localhost:${PORT}`);
+        console.log(`📊 Sistema de Metas de Gerentes - GBI`);
+        scheduler.start();
+    });
+}
 
 module.exports = app;

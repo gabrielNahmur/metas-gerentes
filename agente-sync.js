@@ -2,7 +2,7 @@ require('dotenv').config();
 const sqlConnection = require('./backend/sql-connection');
 
 // Configurações
-const AWS_URL = process.env.AWS_URL || 'http://3.239.244.231:3000';
+const AWS_URL = process.env.AWS_URL || 'https://metas.atendimento-gbi.online:3000';
 const SYNC_TOKEN = 'GBI-AWS-SYNC-2026'; // Deve bater com o definido na AWS
 
 async function sincronizarPeriodo(mes, ano) {
