@@ -177,7 +177,12 @@ async function syncVendas() {
         const data = await res.json();
 
         if (data.success) {
-            showStatus(`${data.count || 0} registros sincronizados`, 'success');
+            if (data.count !== undefined) {
+                showStatus(`${data.count || 0} registros sincronizados`, 'success');
+            } else {
+                showStatus(data.message || 'Sincronização agendada via Agente Local.', 'success');
+                alert(data.message || 'Sincronização rodando via Agente. Verifique o servidor Windows.');
+            }
             await carregarDados();
         } else {
             showStatus('Erro na sincronização', 'error');
