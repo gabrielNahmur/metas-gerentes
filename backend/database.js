@@ -106,6 +106,7 @@ function seedUnidades() {
         { codigo: '008', nome: 'B. Upacarai', tipo: 'URBANO', is_combinada: 0 },
         { codigo: '012', nome: 'Gral Osorio (Bagé)', tipo: 'URBANO', is_combinada: 0 },
         { codigo: '013', nome: 'Gral Netto', tipo: 'URBANO', is_combinada: 0 },
+        { codigo: '014', nome: 'Av. Santa Tecla (Texaco)', tipo: 'URBANO', is_combinada: 0 },
         { codigo: '051', nome: 'Mathias', tipo: 'URBANO', is_combinada: 0 },
         { codigo: '052', nome: 'Rio Branco', tipo: 'URBANO', is_combinada: 0 },
         { codigo: '054', nome: 'Helvio Basso', tipo: 'URBANO', is_combinada: 1 },
